@@ -114,7 +114,7 @@ const SHOP_ITEMS2 = {
 };
 // ======== END OF SHOP CONFIG ========
 
-/ Middleware
+// Middleware
 app.use(express.json());
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
