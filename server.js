@@ -2,7 +2,7 @@ const path = require('path');
 const express = require('express');
 const Stripe = require('stripe');
 const app = express();
-const stripe = Stripe(process.env.STRIPE_SECRET_KEY); //|| 'sk_test_51QV1GQFTxUtP1E0qXgWALeObPMxehMmlNRoN1ZclaKuzYPflpqS78imiTN1hwshmFGqNkx11a9c9z0R3fm771ZEg00eBR4h5oP');
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY) || 'sk_test_51QV1GQFTxUtP1E0qXgWALeObPMxehMmlNRoN1ZclaKuzYPflpqS78imiTN1hwshmFGqNkx11a9c9z0R3fm771ZEg00eBR4h5oP');
 const SUCCESS_URL = 'https://inkalatia.github.io/success/success.html'; // Mirror premium flow
 const CANCEL_URL = 'https://inkalatia.github.io/cancel/cancel.html';
 
