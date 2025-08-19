@@ -3,12 +3,12 @@ const express = require('express');
 const Stripe = require('stripe');
 const app = express();
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY) || ('sk_test_51QV1GQFTxUtP1E0qXgWALeObPMxehMmlNRoN1ZclaKuzYPflpqS78imiTN1hwshmFGqNkx11a9c9z0R3fm771ZEg00eBR4h5oP');
-const SUCCESS_URL = 'https://inkalatia.github.io/success/success.html'; // Mirror premium flow
+const SUCCESS_URL = 'https://inkalatia.github.io/success/success.html';
 const CANCEL_URL = 'https://inkalatia.github.io/cancel/cancel.html';
 
 // ======== SHOP ITEMS CONFIGURATION ========
 const SHOP_ITEMS = {
-  // Skins this is for live
+  // Skins
   'barbarians': { 
     name: 'barbarians',
     stripe_product_id: 'prod_SsaIOvKb0ZKRvR',
@@ -34,15 +34,12 @@ const SHOP_ITEMS = {
     stripe_product_id: 'prod_SsaPmW7ZuQ7F9Q',
     stripe_price_id: 'price_1RwpEfFTxUtP1E0q70QUuZsB'
   },
-  
   'sketchesunc':  {
     name: 'sketchesunc',
     stripe_product_id: 'prod_SsaQBBbtLr1i23',
     stripe_price_id: 'price_1RwpFmFTxUtP1E0qDchIeP4D'
   },
-  
-// Magic Dust
-
+  // Magic Dust
   '500magicdust': {
     name: '500magicdust',
     stripe_product_id: 'prod_SsaVjH9bs8jDm7',
@@ -59,60 +56,6 @@ const SHOP_ITEMS = {
     stripe_price_id: 'price_1RwpObFTxUtP1E0q5tMbGaWi'
   },
 };
-
-const SHOP_ITEMS2 = {
-  // Galleries THIS IS ALL TEST MODE
-  'barbarians': { 
-    name: 'barbarians',
-    stripe_product_id: 'prod_SsaIOvKb0ZKRvR',
-    stripe_price_id: 'price_1Rwp7RFTxUtP1E0qpekvQ7e2'
-  },
-  'barbarianscens': {
-    name: 'barbarianscens',
-    stripe_product_id: 'prod_SsaKjrJGrK2gqo',
-    stripe_price_id: 'price_1Rwp9RFTxUtP1E0qjuOA41rk'
-  },
-  'fairies': {
-    name: 'fairies',
-    stripe_product_id: 'prod_SsaMC1sKyxp0gX',
-    stripe_price_id: 'price_1RwpBiFTxUtP1E0qGGHPg3pu'
-  },
-  'fairiescens': {
-    name: 'fairiescens',
-    stripe_product_id: 'prod_SsaNawRruN8Cz8',
-    stripe_price_id: 'price_1RwpD3FTxUtP1E0qSn8SOkeg'
-  },
-  'fantasyunc': {
-    name: 'fantasyunc',
-    stripe_product_id: 'prod_SsaPmW7ZuQ7F9Q',
-    stripe_price_id: 'price_1RwpEfFTxUtP1E0q70QUuZsB'
-  },
-  
-  'sketchesunc':  {
-    name: 'sketchesunc',
-    stripe_product_id: 'prod_SsaQBBbtLr1i23',
-    stripe_price_id: 'price_1RwpFmFTxUtP1E0qDchIeP4D'
-  },
-  
-// Magic Dust
-
-  '500magicdust': {
-    name: '500magicdust',
-    stripe_product_id: 'prod_SsaVjH9bs8jDm7',
-    stripe_price_id: 'price_1RwpKGFTxUtP1E0qJOaPcjHH'
-  },
-  '1100magicdust': {
-    name: '1100magicdust',
-    stripe_product_id: 'prod_SsaX8EaZ6w3kX4',
-    stripe_price_id: 'price_1RwpMoFTxUtP1E0qrOxpKpCo'
-  },
-  '2500magicdust': {
-    name: '2500magicdust',
-    stripe_product_id: 'prod_SsaZGWh1LKW1JP',
-    stripe_price_id: 'price_1RwpObFTxUtP1E0q5tMbGaWi'
-  },
-};
-// ======== END OF SHOP CONFIG ========
 
 // Middleware
 app.use(express.json());
@@ -139,7 +82,8 @@ app.post('/create_shop_session', async (req, res) => {
       });
     }
 
-    const priceId = SHOP_ITEMS[product_id].stripe_price_id;
+    const product = SHOP_ITEMS[product_id];
+    const priceId = product.stripe_price_id;
     
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card', 'wechat_pay'],
@@ -154,7 +98,16 @@ app.post('/create_shop_session', async (req, res) => {
       success_url: `${SUCCESS_URL}?session_id={CHECKOUT_SESSION_ID}&product_id=${product_id}`,
       cancel_url: CANCEL_URL,
       customer_email: email,
-      metadata: { game_item_id: product_id }
+      payment_intent_data: {
+        description: `Purchase: ${product.name}`,
+        metadata: {
+          internal_product_id: product_id
+        }
+      },
+      metadata: { 
+        internal_product_id: product_id,
+        product_name: product.name
+      }
     });
 
     res.json({ 
@@ -171,64 +124,24 @@ app.post('/create_shop_session', async (req, res) => {
   }
 });
 
-// ======== WEBHOOK FULFILLMENT ========
-app.post('/webhook', express.raw({type: 'application/json'}), async (req, res) => {
-  const sig = req.headers['stripe-signature'];
-  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-  if (!endpointSecret) {
-    console.error('❌ Missing webhook secret');
-    return res.status(400).send('Webhook secret not configured');
-  }
-
-  try {
-    const event = stripe.webhooks.constructEvent(
-      req.body,
-      sig,
-      endpointSecret
-    );
-
-    // Handle successful payments
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object;
-      const productId = session.metadata.game_item_id;
-      const email = session.customer_email;
-
-      console.log(`✅ Payment succeeded: ${session.id}`);
-      console.log(`   Product: ${productId}, Email: ${email}`);
-      
-      // Add your fulfillment logic here:
-      console.log("⚠️ Fulfillment needed: Grant product to user");
-    }
-
-    res.status(200).json({ received: true });
-  } catch (err) {
-    console.error('❌ Webhook Error:', err.message);
-    res.status(400).send(`Webhook Error: ${err.message}`);
-  }
-});
-
 // ======== PURCHASE VERIFICATION ========
 app.post('/verify_purchase', async (req, res) => {
   try {
-    const { session_id, product_id } = req.body;
+    const { product_id, email } = req.body;
     
-    if (!session_id || !product_id) {
+    if (!product_id || !email) {
       return res.status(400).json({ 
-        error: 'Missing session_id or product_id' 
+        error: 'Missing product_id or email' 
       });
     }
     
-    const session = await stripe.checkout.sessions.retrieve(session_id);
-    
-    const isVerified = session.payment_status === 'paid' && 
-                      session.metadata.game_item_id === product_id;
+    // Check Stripe charges for this email and product
+    const isPurchased = await checkStripePurchase(email, product_id);
     
     res.json({ 
-      valid: isVerified,
-      product_id: session.metadata.game_item_id,
-      email: session.customer_email,
-      amount_paid: session.amount_total / 100 // Convert to dollars
+      valid: isPurchased,
+      product_id: product_id,
+      email: email
     });
   } catch (error) {
     console.error("Verification Error:", error);
@@ -238,6 +151,53 @@ app.post('/verify_purchase', async (req, res) => {
     });
   }
 });
+
+// Helper function to check Stripe purchases
+async function checkStripePurchase(email, productId) {
+  try {
+    // First try to find by customer email
+    const customers = await stripe.customers.list({
+      email: email,
+      limit: 1,
+    });
+
+    let isPurchased = false;
+
+    // Check if customer exists and has purchased this product
+    if (customers.data.length > 0) {
+      const customer = customers.data[0];
+      
+      // Check payment intents for this customer
+      const paymentIntents = await stripe.paymentIntents.list({
+        customer: customer.id,
+        limit: 100,
+      });
+
+      isPurchased = paymentIntents.data.some(intent => 
+        intent.metadata.internal_product_id === productId &&
+        intent.status === 'succeeded'
+      );
+    }
+
+    // If not found via customer, search all charges
+    if (!isPurchased) {
+      const charges = await stripe.charges.list({
+        limit: 100,
+      });
+
+      isPurchased = charges.data.some(charge => 
+        charge.billing_details?.email === email &&
+        charge.metadata.internal_product_id === productId &&
+        charge.status === 'succeeded'
+      );
+    }
+
+    return isPurchased;
+  } catch (error) {
+    console.error("Stripe check error:", error);
+    return false;
+  }
+}
 
 // Start the server
 const PORT = process.env.PORT || 3000;
