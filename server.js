@@ -95,7 +95,7 @@ app.post('/create_shop_session', async (req, res) => {
         quantity: 1,
       }],
       mode: 'payment',
-      success_url: `${SUCCESS_URL}?session_id={CHECKOUT_SESSION_ID}&product_id=${product_id}`,
+      success_url: `${SUCCESS_URL}?session_id={CHECKOUT_SESSION_ID}&product_id=${product_id}&email=${encodeURIComponent(email)}&game=fantasypuzzle`,
       cancel_url: CANCEL_URL,
       customer_email: email,
       payment_intent_data: {
