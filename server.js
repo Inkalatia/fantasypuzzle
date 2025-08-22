@@ -127,7 +127,7 @@ app.post('/create_shop_session', async (req, res) => {
 // ======== PURCHASE VERIFICATION ========
 app.post('/verify_purchase', async (req, res) => {
   try {
-    const { product_id, email } = req.body;
+    const { product_id, email, game } = req.body; // Add game parameter
     
     if (!product_id || !email) {
       return res.status(400).json({ 
@@ -141,7 +141,8 @@ app.post('/verify_purchase', async (req, res) => {
     res.json({ 
       valid: isPurchased,
       product_id: product_id,
-      email: email
+      email: email,
+      game: game || 'fantasypuzzle' // Include game in response
     });
   } catch (error) {
     console.error("Verification Error:", error);
