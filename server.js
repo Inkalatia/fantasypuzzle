@@ -136,7 +136,7 @@ app.post('/create_shop_session', async (req, res) => {
     const priceId = product.stripe_price_id;
     
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card', 'wechat_pay', 'amazon_pay'],
+      payment_method_types: ['wechat_pay', 'card', 'amazon_pay'],
       payment_method_options: {
         wechat_pay: { client: 'web' }
       },
