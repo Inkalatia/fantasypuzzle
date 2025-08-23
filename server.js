@@ -2,12 +2,62 @@ const path = require('path');
 const express = require('express');
 const Stripe = require('stripe');
 const app = express();
-const stripe = Stripe(process.env.STRIPE_SECRET_KEY) || ('sk_test_51QV1GQFTxUtP1E0qXgWALeObPMxehMmlNRoN1ZclaKuzYPflpqS78imiTN1hwshmFGqNkx11a9c9z0R3fm771ZEg00eBR4h5oP');
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const SUCCESS_URL = 'https://inkalatia.github.io/success/success.html';
 const CANCEL_URL = 'https://inkalatia.github.io/cancel/cancel.html';
 
 // ======== SHOP ITEMS CONFIGURATION ========
 const SHOP_ITEMS = {
+  // Skins
+  'barbarians': { 
+    name: 'barbarians',
+    stripe_product_id: 'prod_Sux7RQSokhB6pz',
+    stripe_price_id: 'price_1Rz7DMFTxUtP1E0qNGiG3xui'
+  },
+  'barbarianscens': {
+    name: 'barbarianscens',
+    stripe_product_id: 'prod_Sux7peRamVnk9P',
+    stripe_price_id: 'price_1Rz7DaFTxUtP1E0qeTSgyMGo'
+  },
+  'fairies': {
+    name: 'fairies',
+    stripe_product_id: 'prod_Sux9bOzhZkJ5z4',
+    stripe_price_id: 'price_1Rz7FWFTxUtP1E0qjrGfAQYM'
+  },
+  'fairiescens': {
+    name: 'fairiescens',
+    stripe_product_id: 'prod_Sux8MZ5Jor7ghj',
+    stripe_price_id: 'price_1Rz7DoFTxUtP1E0qI7wN0HeW'
+  },
+  'fantasyunc': {
+    name: 'fantasyunc',
+    stripe_product_id: 'prod_Sux8mE9lyvZbCb',
+    stripe_price_id: 'price_1Rz7DrFTxUtP1E0qlktNHloy'
+  },
+  'sketchesunc':  {
+    name: 'sketchesunc',
+    stripe_product_id: 'prod_Sux8WiswQOvcO9',
+    stripe_price_id: 'price_1Rz7DtFTxUtP1E0qutsApAwM'
+  },
+  // Magic Dust
+  '500magicdust': {
+    name: '500magicdust',
+    stripe_product_id: 'prod_Sux8dQFNmF2UYn',
+    stripe_price_id: 'price_1Rz7DvFTxUtP1E0q7rGzO6we'
+  },
+  '1100magicdust': {
+    name: '1100magicdust',
+    stripe_product_id: 'prod_Sux8rEUVpZBeES',
+    stripe_price_id: 'price_1Rz7DyFTxUtP1E0qN9xndM8o'
+  },
+  '2500magicdust': {
+    name: '2500magicdust',
+    stripe_product_id: 'prod_Sux8bmF2wwQHvN',
+    stripe_price_id: 'price_1Rz7E0FTxUtP1E0qy6ZNovUV'
+  },
+};
+
+const SHOP_ITEMS_TEST = {
   // Skins
   'barbarians': { 
     name: 'barbarians',
