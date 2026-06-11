@@ -3,8 +3,8 @@ const express = require('express');
 const Stripe = require('stripe');
 const app = express();
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
-const SUCCESS_URL = 'https://inkalatia.github.io/success/success.html';
-const CANCEL_URL = 'https://inkalatia.github.io/cancel/cancel.html';
+const SUCCESS_URL = 'https://api.owlyflyapi.ccwu.cc/success.html';
+const CANCEL_URL = 'https://api.owlyflyapi.ccwu.cc/cancel.html';
 
 // ======== SHOP ITEMS CONFIGURATION ========
 const SHOP_ITEMS = {
@@ -251,5 +251,6 @@ async function checkStripePurchase(email, productId) {
 }
 
 // Start the server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
+//const PORT = process.env.PORT || 3000;
+//app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
+export default app;
